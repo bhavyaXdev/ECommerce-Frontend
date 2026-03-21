@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Star, ShoppingCart, Heart, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { removeProduct } from "../Utility/ProductSlice.js";
 
 const SuggestionSection = () => {
-  const products = useSelector((state) => state.home.recommendedProducts);
+  const dispatch = useDispatch();
+  const globalProducts = useSelector((state) => state.products.allProducts);
+  // Pick a few top rated products from the dynamically fetched API data
+  const products = globalProducts.slice(0, 4);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(1);
   const [direction, setDirection] = useState(0);
@@ -83,12 +87,13 @@ const SuggestionSection = () => {
         <img
           src={product.image}
           alt={product.name}
+          onError={() => dispatch(removeProduct(product.id))}
           className="w-full h-full object-cover select-none pointer-events-none"
           draggable="false"
         />
 
         {/* Badges - Hidden on mobile */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2 hidden md:flex">
+        <div className="absolute top-4 left-4 hidden md:flex flex-col gap-2">
           {product.isNew && (
             <span className="bg-brand-primary text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm uppercase tracking-wider">
               New
@@ -100,7 +105,7 @@ const SuggestionSection = () => {
         </div>
 
         {/* Quick Action Overlay - Desktop only */}
-        <div className="absolute top-5 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 hidden md:flex">
+        <div className="absolute top-5 right-3 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex flex-col items-center justify-center gap-3">
           <button className="w-10 h-10 bg-white rounded-full flex  items-center justify-center text-gray-800 hover:bg-brand-primary hover:text-white transition-all shadow-md transform translate-y-4 group-hover:translate-y-0 duration-300">
             <Heart size={18} />
           </button>
@@ -132,10 +137,10 @@ const SuggestionSection = () => {
         <div className="flex items-center justify-between mt-auto">
           <div className="flex flex-col">
             <span className="text-sm md:text-[15px] lg:text-lg font-black text-slate-800 leading-none">
-              {product.price}
+              {typeof product.price === 'number' ? `₹${product.price.toLocaleString()}` : product.price}
             </span>
             <span className="text-[9px] md:text-[9px] lg:text-xs text-gray-400 line-through mt-0.5 hidden md:block">
-              {product.originalPrice}
+              {typeof product.originalPrice === 'number' ? `₹${product.originalPrice.toLocaleString()}` : product.originalPrice}
             </span>
           </div>
           <button className="bg-gray-900 text-white p-2 md:p-2 lg:p-2.5 rounded-lg md:rounded-xl hover:bg-brand-primary transition-colors shadow-sm hidden md:flex">
